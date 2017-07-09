@@ -1,16 +1,18 @@
-var express = require('express');
-var path = require('path');
-var expressGraphQL = require('express-graphql');
+const express = require('express');
+const path = require('path');
+const expressGraphQL = require('express-graphql');
+const schema = require('./schema/schema');
 
-var app = express();
-var port = 4000;
+const app = express();
+const port = 4000;
 
 app.use('/graphql', expressGraphQL({
+  schema,
   graphiql: true,
 }));
 
 app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.listen(port, () => {
-  console.log('Listening to port ' + port);
+  console.log(`Listening to port ${port}`);
 });
