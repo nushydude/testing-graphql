@@ -4,6 +4,7 @@ const axios = require('axios');
 
 const {
   GraphQLInt,
+  GraphQLList,
   GraphQLObjectType,
   GraphQLSchema,
   GraphQLString,
@@ -14,16 +15,27 @@ const {
 // CompanyType is used inside the definition of the UserType.
 const CompanyType = new GraphQLObjectType({
   name: 'Company',
-  fields: {
+  fields: () => ({ // <------------------ we have to do this because UserType is not defined before it is being used
     id: { type: GraphQLString },
     name: { type: GraphQLString },
     description: { type: GraphQLString },
-  },
+    users: {
+      type: new GraphQLList(UserType), // since this would be a list
+      resolve(parentValue, args) {
+        console.log(parentValue);
+        return (
+          axios
+          .get(`http://localhost:3000/companies/${parentValue.id}/users`) // this maps to the json-server api
+          .then(res => res.data)
+        );
+      }
+    }
+  }),
 });
 
 const UserType = new GraphQLObjectType({
   name: 'User', // required
-  fields: { // required
+  fields: () => ({ // required
     id: { type: GraphQLString },
     firstName: { type: GraphQLString },
     company: { // note that this is company and not companyId :S
@@ -37,9 +49,9 @@ const UserType = new GraphQLObjectType({
           .get(`http://localhost:3000/companies/${parentValue.companyId}`)
           .then(res => res.data)
         );
-      },
+      }
     },
-  },
+  }),
 });
 
 const RootQuery = new GraphQLObjectType({
@@ -51,6 +63,16 @@ const RootQuery = new GraphQLObjectType({
       resolve(parentValue, args) {
         return (
           axios.get(`http://localhost:3000/users/${args.id}`)
+          .then(res => res.data) // we need this because axios returns the data inside res.data
+        );
+      },
+    },
+    company: {
+      type: CompanyType,
+      args: { id: { type: GraphQLString } },
+      resolve(parentValue, args) {
+        return (
+          axios.get(`http://localhost:3000/companies/${args.id}`)
           .then(res => res.data) // we need this because axios returns the data inside res.data
         );
       },
