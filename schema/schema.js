@@ -1,5 +1,6 @@
 const graphql = require('graphql');
-const _ = require('lodash');
+// const _ = require('lodash');
+const axios = require('axios');
 
 const {
   GraphQLInt,
@@ -8,17 +9,36 @@ const {
   GraphQLString,
 } = graphql;
 
-const users = [
-  { id: '23', firstname: 'Bill', age: 20 },
-  { id: '47', firstname: 'Samantha', age: 21 },
-];
+
+// CompanyType has to be defined before UserType because
+// CompanyType is used inside the definition of the UserType.
+const CompanyType = new GraphQLObjectType({
+  name: 'Company',
+  fields: {
+    id: { type: GraphQLString },
+    name: { type: GraphQLString },
+    description: { type: GraphQLString },
+  },
+});
 
 const UserType = new GraphQLObjectType({
   name: 'User', // required
   fields: { // required
     id: { type: GraphQLString },
-    firstname: { type: GraphQLString },
-    age: { type: GraphQLInt },
+    firstName: { type: GraphQLString },
+    company: { // note that this is company and not companyId :S
+      type: CompanyType,
+      resolve(parentValue, args) {
+        // this function is required to map between the companyId and company.
+        // if you console.log parentValue and args, you will find that the
+        // parentValue contains the user
+        return (
+          axios
+          .get(`http://localhost:3000/companies/${parentValue.companyId}`)
+          .then(res => res.data)
+        );
+      },
+    },
   },
 });
 
@@ -29,7 +49,10 @@ const RootQuery = new GraphQLObjectType({
       type: UserType,
       args: { id: { type: GraphQLString } },
       resolve(parentValue, args) {
-        return _.find(users, { id: args.id });
+        return (
+          axios.get(`http://localhost:3000/users/${args.id}`)
+          .then(res => res.data) // we need this because axios returns the data inside res.data
+        );
       },
     },
   },

@@ -1,0 +1,28 @@
+{
+  "users": [
+    {
+      "id": "23",
+      "firstName": "John",
+      "companyId": "1"
+    }, {
+      "id": "40",
+      "firstName": "Samatha",
+      "companyId": "2"
+    }, {
+      "id": "34",
+      "firstName": "Nick",
+      "companyId": "2"
+    }
+  ],
+  "companies": [
+    {
+      "id": "1",
+      "name": "Apple Inc",
+      "description": "Most profitable consumer electronics company"
+    }, {
+      "id": "2",
+      "name": "Google",
+      "description": "Largest search company"
+    }
+  ]
+}
